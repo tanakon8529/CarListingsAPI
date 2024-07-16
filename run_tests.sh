@@ -1,19 +1,13 @@
 #!/bin/bash
 
-# Start Docker Compose
-docker-compose up --build -d
+# Exit on any error
+set -e
 
-# Give some time for services to start
-sleep 3
+# Pull Docker images and start services
+docker-compose up -d
 
-# Run the tests
-docker-compose exec api go test ./...
+# Run tests inside the Docker container
+docker-compose exec -T api go test ./...
 
-# Capture the test exit code
-TEST_EXIT_CODE=$?
-
-# Stop Docker Compose
+# Clean up
 docker-compose down
-
-# Exit with the test exit code
-exit $TEST_EXIT_CODE
