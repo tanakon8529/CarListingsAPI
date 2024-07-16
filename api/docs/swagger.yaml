@@ -1,0 +1,767 @@
+basePath: /api/v1
+definitions:
+  models.Category:
+    description: Represents a category
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      id:
+        type: integer
+      isPublic:
+        description: field to distinguish between public and private categories
+        type: boolean
+      listings:
+        items:
+          $ref: '#/definitions/models.Listing'
+        type: array
+      name:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  models.Listing:
+    description: Represents a listing
+    properties:
+      categoryID:
+        type: integer
+      content:
+        description: Limit content to 5000 characters
+        type: string
+      createdAt:
+        type: string
+      createdBy:
+        $ref: '#/definitions/models.User'
+      createdByID:
+        type: integer
+      deletedAt:
+        type: string
+      id:
+        type: integer
+      isHidden:
+        description: field to handle temporary hiding by moderators
+        type: boolean
+      isPublic:
+        type: boolean
+      pictures:
+        items:
+          $ref: '#/definitions/models.Picture'
+        type: array
+      replies:
+        items:
+          $ref: '#/definitions/models.Reply'
+        type: array
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  models.Picture:
+    description: Represents a picture in a listing
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      id:
+        type: integer
+      listing:
+        $ref: '#/definitions/models.Listing'
+      listingID:
+        type: integer
+      updatedAt:
+        type: string
+      url:
+        type: string
+    type: object
+  models.PrivateMessage:
+    description: Represents a private message between users
+    properties:
+      content:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      id:
+        type: integer
+      receiver:
+        $ref: '#/definitions/models.User'
+      receiverID:
+        type: integer
+      sender:
+        $ref: '#/definitions/models.User'
+      senderID:
+        type: integer
+      updatedAt:
+        type: string
+    type: object
+  models.Reply:
+    description: Represents a reply to a listing
+    properties:
+      content:
+        description: Limit reply content to 255 characters
+        type: string
+      createdAt:
+        type: string
+      createdBy:
+        $ref: '#/definitions/models.User'
+      createdByID:
+        type: integer
+      deletedAt:
+        type: string
+      id:
+        type: integer
+      listingID:
+        type: integer
+      updatedAt:
+        type: string
+    type: object
+  models.User:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      listings:
+        items:
+          $ref: '#/definitions/models.Listing'
+        type: array
+      messagesReceived:
+        items:
+          $ref: '#/definitions/models.PrivateMessage'
+        type: array
+      messagesSent:
+        items:
+          $ref: '#/definitions/models.PrivateMessage'
+        type: array
+      password:
+        type: string
+      replies:
+        items:
+          $ref: '#/definitions/models.Reply'
+        type: array
+      role:
+        description: roles like 'registered_user', 'moderator', 'admin'
+        type: string
+      updatedAt:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is a sample server for a used car listing application.
+  title: Daveslist API
+  version: "1.0"
+paths:
+  /auth:
+    post:
+      consumes:
+      - application/json
+      description: Generate a new token if client_id and secret_id are correct
+      parameters:
+      - description: Client ID
+        in: header
+        name: client_id
+        required: true
+        type: string
+      - description: Secret ID
+        in: header
+        name: secret_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Generate a new token
+      tags:
+      - auth
+  /categories:
+    get:
+      description: List all categories
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Category'
+            type: array
+      summary: List all categories
+      tags:
+      - Categories
+    post:
+      consumes:
+      - application/json
+      description: Create a new category
+      parameters:
+      - description: Category
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/models.Category'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Category'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a new category
+      tags:
+      - Categories
+  /categories/{id}:
+    delete:
+      description: Delete a category by ID
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete a category by ID
+      tags:
+      - Categories
+    get:
+      description: Get a category by ID
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Category'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get a category by ID
+      tags:
+      - Categories
+    put:
+      consumes:
+      - application/json
+      description: Update a category by ID
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Category
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/models.Category'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Category'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update a category by ID
+      tags:
+      - Categories
+  /health:
+    get:
+      consumes:
+      - application/json
+      description: Check the health of the server
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Health check
+      tags:
+      - health
+  /listings:
+    get:
+      description: List all listings
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Listing'
+            type: array
+      summary: List all listings
+      tags:
+      - Listings
+    post:
+      consumes:
+      - application/json
+      description: Create a new listing
+      parameters:
+      - description: Listing
+        in: body
+        name: listing
+        required: true
+        schema:
+          $ref: '#/definitions/models.Listing'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Listing'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a new listing
+      tags:
+      - Listings
+  /listings/{id}:
+    delete:
+      description: Delete a listing by ID
+      parameters:
+      - description: Listing ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete a listing by ID
+      tags:
+      - Listings
+    get:
+      description: Get a listing by ID
+      parameters:
+      - description: Listing ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Listing'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get a listing by ID
+      tags:
+      - Listings
+    put:
+      consumes:
+      - application/json
+      description: Update a listing by ID
+      parameters:
+      - description: Listing ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Listing
+        in: body
+        name: listing
+        required: true
+        schema:
+          $ref: '#/definitions/models.Listing'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Listing'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update a listing by ID
+      tags:
+      - Listings
+  /listings/{listing_id}/replies:
+    post:
+      consumes:
+      - application/json
+      description: Create a new reply
+      parameters:
+      - description: Listing ID
+        in: path
+        name: listing_id
+        required: true
+        type: integer
+      - description: Reply
+        in: body
+        name: reply
+        required: true
+        schema:
+          $ref: '#/definitions/models.Reply'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Reply'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a new reply
+      tags:
+      - Replies
+  /messages:
+    post:
+      consumes:
+      - application/json
+      description: Send a private message
+      parameters:
+      - description: Private Message
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.PrivateMessage'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PrivateMessage'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Send a private message
+      tags:
+      - PrivateMessages
+  /messages/{id}:
+    delete:
+      description: Delete a private message by ID
+      parameters:
+      - description: Message ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete a private message by ID
+      tags:
+      - PrivateMessages
+    get:
+      description: Get a private message by ID
+      parameters:
+      - description: Message ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PrivateMessage'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get a private message by ID
+      tags:
+      - PrivateMessages
+  /replies/{id}:
+    delete:
+      description: Delete a reply by ID
+      parameters:
+      - description: Reply ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete a reply by ID
+      tags:
+      - Replies
+    get:
+      description: Get a reply by ID
+      parameters:
+      - description: Reply ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Reply'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get a reply by ID
+      tags:
+      - Replies
+    put:
+      consumes:
+      - application/json
+      description: Update a reply by ID
+      parameters:
+      - description: Reply ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Reply
+        in: body
+        name: reply
+        required: true
+        schema:
+          $ref: '#/definitions/models.Reply'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Reply'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update a reply by ID
+      tags:
+      - Replies
+  /users:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user
+      parameters:
+      - description: User
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a new user
+      tags:
+      - Users
+  /users/{id}:
+    delete:
+      description: Delete a user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete a user by ID
+      tags:
+      - Users
+    get:
+      description: Get a user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get a user by ID
+      tags:
+      - Users
+    put:
+      consumes:
+      - application/json
+      description: Update a user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: User
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update a user by ID
+      tags:
+      - Users
+swagger: "2.0"
